@@ -46,4 +46,4 @@ book_list_query_params.add_argument('search_text', type =str, required = False)
 book_list_query_params.add_argument('search_field', type =str, required = False)
 
 
-temp_data = {'fullfillment_text':None,'submitted_message':None}
+temp_data = {'fulfillment_text':None,'submitted_message':None}

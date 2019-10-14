@@ -2,13 +2,15 @@ import logging.config
 import os
 
 from flask import Flask, Blueprint
-
+from flask_cors import CORS
 import settings
 from controller.restplus import api
 from controller.message_handler import namespace as message_namespace
 from controller.book_controller import namespace as book_namespace
 
 app = Flask(__name__)
+CORS(app)
+
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), 'logging.conf'))
 logging.config.fileConfig(logging_conf_path)
 log = logging.getLogger(__name__)
@@ -34,7 +36,7 @@ def initialize_app(flask_app):
 def main():
     initialize_app(app)
     log.info('>>>>> Starting development server at http://{}/api/ <<<<<'.format(app.config['SERVER_NAME']))
-    app.run(debug=settings.FLASK_DEBUG)
+    app.run(debug=settings.FLASK_DEBUG,host='0.0.0.0')
 
 
 if __name__ == "__main__":

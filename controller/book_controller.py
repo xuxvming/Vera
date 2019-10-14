@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from flask import request
@@ -35,35 +34,56 @@ class BookListDiscovery(Resource):
 class BookLists(Resource):
 
     def get(self):
-        response = MessageResponse(fullfillment_text=temp_data.get('fullfillment_text'), socketId=None,
+        response = MessageResponse(fullfillment_text=temp_data.get('fulfillment_text'), socketId=None,
                                    submitted_message=temp_data.get('submitted_message'), timestamp=datetime.now())
         return response.serialize()
 
     def post(self):
         data = request.get_json(silent=True)
-        try:
 
-            if 'bookarea' in data['queryResult']['parameters']:
+        try:
+            temp_data['submitted_message'] = data['queryResult']['queryText']
+            if data['queryResult']['intent']['displayName'] == 'book.area':
+                temp_data['fulfillment_text'] = None
                 search_area = data['queryResult']['parameters']['bookarea']
                 books = search_for_top_books(search_area)
-                book_list = []
+                book_list = 'Here is a list of top 5 books:\n'
                 for i in range(len(books)):
-                    rank = {str(i + 1): books[i]['title']}
-                    book_list.append(rank)
-                temp_data['fullfillment_text'] = book_list
+                    rank = str(i+1)+':'+books[i]['title']
+                    book_list = book_list + rank + '\n'
+                    if i == 4:
+                        break
+                temp_data['fulfillment_text'] = book_list
 
-            elif 'bookname' in data['queryResult']['parameters']:
+            elif data['queryResult']['intent']['displayName'] == 'book.area.search':
+                if temp_data['fulfillment_text'] is None:
+                    temp_data['fulfillment_text'] = 'Sorry, I could not find anything at the moment'
+                return temp_data
+
+            elif data['queryResult']['intent']['displayName'] == 'book.name':
                 book_title = data['queryResult']['parameters']['bookname']
                 book = search_book_info(book_title)
-                temp_data['fullfillment_text'] = book
+                return {'fulfillment_text':'Author: {} \n'.format(book['authors']['author']['name']) +
+                                           'Rating on GoodReads: {} \n'.format(book['average_rating']) +
+                                           'Published in: {}\n'.format(book['publication_year']) +
+                                           'link: {}\n'.format(book['url'])}
 
-            elif 'bookreview' in data['queryResult']['parameters']:
-                book_title = data['queryResult']['parameters']['bookreview']
+            elif data['queryResult']['intent']['displayName']=='book.similar':
+                book_title = data['queryResult']['parameters']['bookname']
                 book = search_book_info(book_title)
-                temp_data['fullfillment_text'] = book['reviews_widget']
-        except:
-            temp_data['fullfillment_text'] = "Could not get details at the moment, please try again"
+                similar_books = 'here are some similar books: \n'
+                for i in range(len(book['similar_books']['book'])):
+                    title = str(i+1)+':'+book['similar_books']['book'][i]['title']
+                    similar_books = similar_books + title + '\n'
+                    if i == 3:
+                        break
 
-        temp_data['submitted_message'] = data['queryResult']['queryText']
+                return {'fulfillment_text':similar_books}
+
+        except:
+            temp_data['fulfillment_text'] = "Could not get details at the moment, please try again"
+
         return temp_data
+
+
 

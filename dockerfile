@@ -1,0 +1,12 @@
+FROM python:latest
+RUN apt-get update
+RUN apt-get install python3-pip -y
+COPY . /vera
+WORKDIR /vera
+ARG GOOGLE_APPLICATION_CREDENTIALS
+ENV GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+RUN echo $GOOGLE_APPLICATION_CREDENTIALS
+RUN pip3 install -r requirements.txt
+RUN which python3
+EXPOSE 8080
+CMD python3 app.py

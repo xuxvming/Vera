@@ -1,0 +1,15 @@
+version: "3.3"
+services:
+  vera:
+    image: vera
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        GOOGLE_APPLICATION_CREDENTIALS: small-talk-ffuybr-79d788400596.json
+    volumes:
+      - .:/vera
+    ports:
+      - 8080:8080
+    expose:
+      - "8080"
